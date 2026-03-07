@@ -2,63 +2,44 @@ const express = require("express");
 const uploadCsv = express.Router();
 const Shipment = require("../models/shipment");
 
-const multer = require("multer");
-const csv = require("csv-parser");
-const fs = require("fs");
+uploadCsv.post("/upload-csv", async (req, res) => {
 
-const upload = multer({ dest: "uploads/" });
+  try {
 
-uploadCsv.post("/upload-csv", upload.single("file"), (req, res) => {
+    const shipments = req.body;
 
-  // Check if file uploaded
-  if (!req.file) {
-    return res.status(400).send("No file uploaded");
-  }
+    if (!Array.isArray(shipments)) {
+      return res.status(400).json({
+        message: "Invalid CSV data"
+      });
+    }
 
-  // Validate CSV file
-  if (!req.file.originalname.endsWith(".csv")) {
-    return res.status(400).send("Only CSV files allowed");
-  }
+    const cleanedData = shipments.filter(row => row.awb_no);
 
-  const results = [];
+    for (const row of cleanedData) {
 
-  fs.createReadStream(req.file.path)
-    .pipe(csv())
-    .on("data", (data) => results.push(data))
-    .on("end", async () => {
+      await Shipment.updateOne(
+        { awb_no: row.awb_no },
+        { $set: row },
+        { upsert: true }
+      );
 
-      try {
+    }
 
-        const cleanedData = results.filter(row => row.awb_no);
-
-        for (const row of cleanedData) {
-
-          await Shipment.updateOne(
-            { awb_no: row.awb_no },
-            { $set: row },
-            { upsert: true }
-          );
-
-        }
-
-        fs.unlinkSync(req.file.path);
-
-        res.json({
-          message: "CSV processed successfully"
-        });
-
-      } catch (err) {
-
-        console.error(err);
-
-        res.status(500).json({
-          message: "Database error",
-          error: err.message
-        });
-
-      }
-
+    res.json({
+      message: "CSV processed successfully"
     });
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      message: "Database error",
+      error: err.message
+    });
+
+  }
 
 });
 
