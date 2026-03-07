@@ -1,8 +1,8 @@
 const connectDB = require("../database");
 const Shipment = require("../models/shipment");
 
-module.exports = async (req, res) => {
-  await connectDB();  
+export default async function handler(req, res) {
+  await connectDB();
   try {
 
     const shipments = req.body;
