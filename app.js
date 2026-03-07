@@ -1,5 +1,7 @@
 const express = require("express");
+const path = require("path");
 const connectDB = require("./database");
+
 
 const track = require("./routes/track");
 const uploadJson = require("./routes/upload-json");
@@ -12,6 +14,8 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
+
+app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", uploadJson);
 app.use("/", uploadCsv);
