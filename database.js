@@ -1,8 +1,15 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const connectDB = async () => { 
-    await mongoose.connect("mongodb+srv://logistics:universal123@shipment.uuywqxb.mongodb.net/?appName=shipment"); 
+let isConnected = false;
+
+async function connectDB() {
+
+  if (isConnected) return;
+
+  await mongoose.connect("mongodb+srv://logistics:universal123@shipment.uuywqxb.mongodb.net/?appName=shipment");
+
+  isConnected = true;
+
 }
-
 
 module.exports = connectDB;

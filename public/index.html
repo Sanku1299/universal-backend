@@ -1,0 +1,100 @@
+<html>
+
+<head>
+    <title>AWB Tracking</title>
+</head>
+
+<body cz-shortcut-listen="true">
+    <h2>Track your AWB Number</h2>
+    <form method="GET" action="">
+        <label for="awb">Enter AWB Number:</label>
+        <input type="text" id="awb" name="awb" required="">
+        <button type="submit">Track</button>
+    </form>
+    <h2>Check All AWB Records</h2>
+    <form method="GET" action="/api/all-data" id="get_records_form">
+        <button type="submit">View All Records</button>
+    </form>
+    <div class="upload-csv-container">
+        <h2>Upload Bulk Data in CSV Format Only</h2>
+        <input type="file" id="csvFile" accept=".csv">
+    </div>
+    <form id="upload_form">
+        <h2>Upload Bulk Data in JSON Format Only</h2>
+        <textarea id="records_data_to_upload" name="records_data_to_upload" rows="30" cols="50" required=""></textarea>
+    </form>
+    <button type="submit" form="upload_form">Upload Bulk Data</button>
+
+    <script>
+        document.querySelector('form[action=""]').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const awb = document.getElementById('awb').value.trim();
+            if (awb) {
+                window.location.href = '/api/track/' + encodeURIComponent(awb);
+            }
+        });
+
+        // Bulk upload form handler for JSON
+        document.getElementById('upload_form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const textarea = document.getElementById('records_data_to_upload');
+            let records;
+            try {
+                records = JSON.parse(textarea.value);
+            } catch (err) {
+                alert('Invalid JSON format!');
+                return;
+            }
+            const res = await fetch('/api/upload-json', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(records)
+            });
+            const result = await res.json();
+            alert(result.message || 'Upload complete');
+        });
+
+        // Bulk upload handler for CSV
+        document.getElementById('csvFile').addEventListener('change', function (event) {
+
+            const file = event.target.files[0];
+
+            if (!file) return;
+
+            // Validate CSV file
+            if (
+                file.type !== 'text/csv' &&
+                !file.name.toLowerCase().endsWith('.csv')
+            ) {
+                alert('Please upload CSV file only');
+                event.target.value = '';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            fetch("/api/upload-csv", {
+                method: "POST",
+                body: formData
+            })
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message);
+                    }
+                    return data;
+                })
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => {
+                    console.error("Upload error:", error);
+                    alert(error.message);
+                });
+
+        });
+    </script>
+</body>
+
+</html>
