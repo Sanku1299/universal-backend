@@ -52,7 +52,12 @@
                 body: JSON.stringify(records)
             });
             const result = await res.json();
-            alert(result.message || 'Upload complete');
+            if (!res.ok) {
+                alert(result.message || "Upload failed");
+                return;
+            }
+
+            alert(result.message || "Upload complete");
         });
 
         // Bulk upload handler for CSV
