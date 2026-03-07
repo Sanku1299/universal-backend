@@ -1,9 +1,8 @@
-const express = require("express");
-const uploadCsv = express.Router();
+const connectDB = require("../database");
 const Shipment = require("../models/shipment");
 
-uploadCsv.post("/upload-csv", async (req, res) => {
-
+module.exports = async (req, res) => {
+    await connectDB();
   try {
 
     const shipments = req.body;
@@ -41,6 +40,4 @@ uploadCsv.post("/upload-csv", async (req, res) => {
 
   }
 
-});
-
-module.exports = uploadCsv;
+};

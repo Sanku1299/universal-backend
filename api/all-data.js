@@ -1,10 +1,8 @@
-const express = require("express");
+const connectDB = require("../database");
 const Shipment = require("../models/shipment");
 
-const allData = express.Router();
-
-allData.get("/all-data", async (req, res) => {
-
+module.exports = async (req, res) => {
+    await connectDB();
     try {
         const shipments = await Shipment.find({});
         res.json(shipments);
@@ -15,6 +13,4 @@ allData.get("/all-data", async (req, res) => {
             error: err.message
         });
     }
-});
-
-module.exports = allData;
+};

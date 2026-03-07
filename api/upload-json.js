@@ -1,10 +1,8 @@
-const express = require("express");
+const connectDB = require("../database");
 const Shipment = require("../models/shipment");
 
-const uploadJson = express.Router();
-
-uploadJson.post("/upload-json", async (req, res) => {
-
+module.exports = async (req, res) => {
+  await connectDB();  
   try {
 
     const shipments = req.body;
@@ -41,6 +39,4 @@ uploadJson.post("/upload-json", async (req, res) => {
 
   }
 
-});
-
-module.exports = uploadJson;
+};

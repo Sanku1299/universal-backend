@@ -1,10 +1,8 @@
-const express = require("express");
+const connectDB = require("../database");
 const Shipment = require("../models/shipment");
 
-const track = express.Router();
-
-track.get("/track/:awb", async (req, res) => {
-
+module.exports = async (req, res) => {
+  await connectDB();
   const awb = req.params.awb;
 
   const shipment = await Shipment.findOne({ awb_no: awb });
@@ -25,6 +23,4 @@ track.get("/track/:awb", async (req, res) => {
     reference_no: shipment.reference_no
   });
 
-});
-
-module.exports = track;
+};
