@@ -42,14 +42,14 @@ opRouter.post("/upload-csv", upload.single("file"), (req, res) => {
         fs.unlink(req.file.path, (err) => {
           if (err) console.error("File delete error:", err);
         });
-
+        console.log("Uploaded file:", req.file);
         res.json({
           message: "CSV processed successfully"
         });
 
       } catch (err) {
 
-        console.error(err);
+        console.error("CSV Upload Error:", err);
 
         res.status(500).json({
           message: "Database error",
