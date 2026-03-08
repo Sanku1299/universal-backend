@@ -28,6 +28,7 @@ opRouter.post("/upload-csv", upload.single("file"), (req, res) => {
     .on("end", async () => {
 
       try {
+        const cleanedData = results.filter(row => row.awb_no);
 
         const operations = cleanedData.map(row => ({
           updateOne: {
@@ -37,12 +38,17 @@ opRouter.post("/upload-csv", upload.single("file"), (req, res) => {
           }
         }));
 
+        if (operations.length === 0) {
+          return res.status(400).json({
+            message: "CSV contains no valid AWB rows"
+          });
+        }
+
         await Shipment.bulkWrite(operations);
 
         fs.unlink(req.file.path, (err) => {
           if (err) console.error("File delete error:", err);
         });
-        console.log("Uploaded file:", req.file);
         res.json({
           message: "CSV processed successfully"
         });
