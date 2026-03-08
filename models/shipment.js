@@ -3,7 +3,9 @@ const mongoose = require("mongoose");
 const shipmentSchema = new mongoose.Schema({
   awb_no: {
     type: String,
-    unique: true
+    required: true,
+    unique: true,
+    index: true
   },
   pickup_date: String,
   from: String,

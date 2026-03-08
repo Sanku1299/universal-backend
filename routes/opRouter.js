@@ -29,19 +29,19 @@ opRouter.post("/upload-csv", upload.single("file"), (req, res) => {
 
       try {
 
-        const cleanedData = results.filter(row => row.awb_no);
+        const operations = cleanedData.map(row => ({
+          updateOne: {
+            filter: { awb_no: row.awb_no },
+            update: { $set: row },
+            upsert: true
+          }
+        }));
 
-        for (const row of cleanedData) {
+        await Shipment.bulkWrite(operations);
 
-          await Shipment.updateOne(
-            { awb_no: row.awb_no },
-            { $set: row },
-            { upsert: true }
-          );
-
-        }
-
-        fs.unlinkSync(req.file.path);
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error("File delete error:", err);
+        });
 
         res.json({
           message: "CSV processed successfully"
@@ -64,25 +64,34 @@ opRouter.post("/upload-csv", upload.single("file"), (req, res) => {
 
 opRouter.get("/track/:awb", async (req, res) => {
 
-  const awb = req.params.awb;
+  try {
+    const awb = req.params.awb;
 
-  const shipment = await Shipment.findOne({ awb_no: awb });
+    const shipment = await Shipment.findOne({ awb_no: awb });
 
-  if (!shipment) {
-    return res.json({ message: "AWB not found" });
+    if (!shipment) {
+      return res.json({ message: "AWB not found" });
+    }
+
+    res.json({
+      awb: shipment.awb_no,
+      pickup_date: shipment.pickup_date,
+      from: shipment.from,
+      to: shipment.to,
+      status: shipment.status,
+      delivery_date: shipment.delivery_date,
+      delivery_time: shipment.delivery_time,
+      recipient: shipment.recipient,
+      reference_no: shipment.reference_no
+    });
+    
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Error fetching shipment",
+      error: err.message
+    });
   }
-
-  res.json({
-    awb: shipment.awb_no,
-    pickup_date: shipment.pickup_date,
-    from: shipment.from,
-    to: shipment.to,
-    status: shipment.status,
-    delivery_date: shipment.delivery_date,
-    delivery_time: shipment.delivery_time,
-    recipient: shipment.recipient,
-    reference_no: shipment.reference_no
-  });
 
 });
 
